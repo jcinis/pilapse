@@ -1,0 +1,15 @@
+{
+  "name": "bcam",
+  "version": "0.0.0",
+  "description": "",
+  "main": "bcam.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jessey White-Cinis <j@cin.is>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.14.0",
+    "socket.io": "^1.7.2"
+  }
+}
