@@ -1,21 +1,3 @@
-
-/*
-// Load the http module to create an http server.
-var http = require('http');
-
-// Configure our HTTP server to respond with Hello World to all requests.
-var server = http.createServer(function (request, response) {
-  response.writeHead(200, {"Content-Type": "text/plain"});
-  response.end("Hello World, I'm Pi.\n");
-});
-
-// Listen on port 8000, IP defaults to 127.0.0.1
-server.listen(8000);
-
-// Put a friendly message on the terminal
-console.log("Server running at http://127.0.0.1:8000/");
-*/
-
 var express = require('express');
 var app = express();
 var http = require('http').Server(app);
@@ -71,7 +53,7 @@ function startStreaming(io) {
     return;
   }
 
-  var args = ["-w", "640", "-h", "480", "-o", "./stream/image_stream.jpg", "-t", "999999999", "-tl", "100"];
+  var args = ["-awb", "auto", "-ex", "auto", "-w", "1280", "-h", "1024", "-vf", "-o", "./stream/image_stream.jpg", "-t", "999999999", "-tl", "100"];
   proc = spawn('raspistill', args);
 
   console.log('Watching for changes...');
