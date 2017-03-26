@@ -5,50 +5,84 @@ const path = require('path');
 const config = require('./config');
 const moment = require('moment');
 const spawn = require('child_process').spawn;
+const Promise = require('bluebird');
 
 var captureProc;
 
+function Picture(){
+  this.filepath;
+  this.keyname;
+  this.url;
+
+  this.getUrl = function(expires){
+    expires = expires ? expires : 60;
+	var params = {Bucket: config.aws_s3_bucket, Key: this.keyname, Expires: expires};
+	this.url = s3.getSignedUrl('getObject', params);
+  	return this.url;
+  }
+}
+
 function takePicture() {
-  if(captureProc) captureProc.kill();
+  return new Promise(function(resolve, reject){
 
-  var date = moment.utc().format('YYYYMMDDHHmmss');
-  var filepath = path.join(config.capture_dir, date+".jpg");
+  	if(captureProc) captureProc.kill();
 
-  var args = ["-awb", "auto", "-ex", "auto", "-w", "1280", "-h", "1024", "-vf", "-o", "./capture/"+date+".jpg"];
-  captureProc = spawn('raspistill', args);
+	var date = moment.utc();
+	var datestr = date.format('YYYYMMDDHHmmss');
+    var filename = datestr+".jpg";
+	var filepath = path.join(config.capture_dir, filename);
+	var keyname = date.format("YYYY/MM/DD/") + filename;
+	var args = ["-awb", "auto", "-ex", "auto", "-w", config.capture_width, "-h", config.capture_height, "-vf", "-o", filepath];
+	captureProc = spawn('raspistill', args);
 
-  captureProc.on('close', (code) => {
-      console.log(filepath,code);
+	var picture = new Picture();
+    picture.filepath = filepath;
+    picture.keyname = keyname;
+
+	captureProc.on('close', function(code){
+		resolve(picture);
+	});
   });
 }
 
+function uploadPicture(picture) {
+  return new Promise(function(resolve, reject){
+	fs.readFile(picture.filepath, function(err, data) {
+      if(err) reject(err);
 
-takePicture();
-
-
-/*
-var filepath = "./test.jpg";
-var keyname  = path.basename(filepath);
-
-fs.readFile(filepath, function(err, data) {
-
-	if(err) throw err;
-    console.log(data);
-
-    var s3bucket = new AWS.S3({params: {Bucket: aws_s3_bucket }});
-    var params = {
-        Key: keyname,
+      var s3bucket = new AWS.S3({params: {Bucket: config.aws_s3_bucket }});
+      var params = {
+        Key: picture.keyname,
         Body: data
-    };
-    s3bucket.upload(params, function (err, data) {
+      };
+
+      s3bucket.upload(params, function (err, data) {
         if (err) {
-            console.log('ERROR MSG: ', err);
-        } else {
-            console.log('Successfully uploaded '+keyname);
-            var params = {Bucket: aws_s3_bucket, Key: keyname, Expires: 60};
-            var url = s3.getSignedUrl('getObject', params);
-            console.log(url);
+        	reject(err);
+		} else {
+
+          console.info('uploaded: ' + picture.keyname);
+          console.info('url created: ' + picture.getUrl(60));
+
+          resolve(picture);
         }
+      });
+	});
+  });
+}
+
+function deleteFile(picture) {
+  return new Promise(function(resolve, reject){
+    fs.unlink(picture.filepath, function(err){
+      if (err) throw err;
+      console.info('deleted: ' + picture.filepath);
+      resolve(picture);
     });
-});
-*/
+  });
+}
+
+takePicture()
+  .then(uploadPicture)
+  .then(deleteFile)
+  .then(console.log);
+
