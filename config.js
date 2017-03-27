@@ -1,4 +1,5 @@
 module.exports = {
+  "debug":false,
   "aws_access_key_id":"",
   "aws_secret_access_key":"",
   "aws_s3_bucket":"809f8c7e-cc23-484a-a3b0-e028084e4e4e",

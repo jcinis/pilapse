@@ -7,47 +7,53 @@ const moment = require('moment');
 const spawn = require('child_process').spawn;
 const Promise = require('bluebird');
 
-var captureProc;
-
 function Picture(){
+
   this.filepath;
   this.keyname;
   this.url;
 
   this.getUrl = function(expires){
     expires = expires ? expires : 60;
-	var params = {Bucket: config.aws_s3_bucket, Key: this.keyname, Expires: expires};
-	this.url = s3.getSignedUrl('getObject', params);
+    var params = {Bucket: config.aws_s3_bucket, Key: this.keyname, Expires: expires};
+    this.url = s3.getSignedUrl('getObject', params);
   	return this.url;
   }
 }
 
+var captureProc = null;
 function takePicture() {
-  return new Promise(function(resolve, reject){
+  return new Promise(function(resolve){
 
-  	if(captureProc) captureProc.kill();
+    if(captureProc != null) {
+      captureProc.kill();
+      captureProc = null;
+	  }
 
-	var date = moment.utc();
-	var datestr = date.format('YYYYMMDDHHmmss');
+    var date = moment.utc();
+    var datestr = date.format('YYYYMMDDHHmmss');
     var filename = datestr+".jpg";
-	var filepath = path.join(config.capture_dir, filename);
-	var keyname = date.format("YYYY/MM/DD/") + filename;
-	var args = ["-awb", "auto", "-ex", "auto", "-w", config.capture_width, "-h", config.capture_height, "-vf", "-o", filepath];
-	captureProc = spawn('raspistill', args);
+    var filepath = path.join(config.capture_dir, filename);
+    var keyname = date.format("YYYY/MM/DD/") + filename;
+    var args = ["-awb", "auto", "-ex", "auto", "-w", config.capture_width, "-h", config.capture_height, "-vf", "-o", filepath];
 
-	var picture = new Picture();
+    console.info(keyname + "\tcapture started")
+    captureProc = spawn('raspistill', args);
+    console.info(keyname + "\tcapture complete")
+
+    var picture = new Picture();
     picture.filepath = filepath;
     picture.keyname = keyname;
 
-	captureProc.on('close', function(code){
-		resolve(picture);
-	});
+    captureProc.on('close', function(code){
+      resolve(picture);
+	  });
   });
 }
 
 function uploadPicture(picture) {
   return new Promise(function(resolve, reject){
-	fs.readFile(picture.filepath, function(err, data) {
+    fs.readFile(picture.filepath, function(err, data) {
       if(err) reject(err);
 
       var s3bucket = new AWS.S3({params: {Bucket: config.aws_s3_bucket }});
@@ -56,18 +62,16 @@ function uploadPicture(picture) {
         Body: data
       };
 
+      console.info(picture.keyname + "\tupload started");
       s3bucket.upload(params, function (err, data) {
         if (err) {
         	reject(err);
-		} else {
-
-          console.info('uploaded: ' + picture.keyname);
-          console.info('url created: ' + picture.getUrl(60));
-
+        } else {
+          console.info(picture.keyname + "\tupload complete");
           resolve(picture);
         }
       });
-	});
+	  });
   });
 }
 
@@ -75,14 +79,39 @@ function deleteFile(picture) {
   return new Promise(function(resolve, reject){
     fs.unlink(picture.filepath, function(err){
       if (err) throw err;
-      console.info('deleted: ' + picture.filepath);
+      console.info(picture.keyname + "\tdeleted local file\t" + picture.filepath);
       resolve(picture);
     });
   });
 }
 
-takePicture()
-  .then(uploadPicture)
-  .then(deleteFile)
-  .then(console.log);
+function capture(){
+  takePicture()
+    .then(uploadPicture)
+    .then(deleteFile)
+    .then(function(picture){
+      console.info(picture.keyname + "\turl created\t" + picture.getUrl(60));
+    });
+}
 
+var interval;
+function start(){
+  console.info("process\tstarting timelapse\t" + config.capture_frequency + " seconds");
+  capture(); // take picture on start
+  interval = setInterval(function(){
+    capture();
+  }, config.capture_frequency * 1000)
+}
+
+function stop(){
+  if(interval) clearInterval(interval);
+  console.info("process\thalting timelapse");
+}
+
+
+
+// MAIN :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+start();
+process.on('SIGTERM', stop);
+process.on('SIGINT', stop);
