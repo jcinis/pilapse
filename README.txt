@@ -1,7 +1,5 @@
-# BCam
+# PI Lapse
 
-Simple camera app that can be configured to take photos at whatever increment you like and uploads to an s3 bucket.
+Simple timelapse application for rasperry pi camera that uploads to an s3 bucket and allows for configurable image size and time intervals.
 
-## Todo
-- configurable increment for taking photos.
-- separate processes for taking photos and uploading to allow for network outages.
+
