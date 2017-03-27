@@ -1,18 +1,16 @@
 {
-  "name": "bcam",
+  "name": "pilapse",
   "version": "0.0.0",
   "description": "",
-  "main": "bcam.js",
+  "main": "pilapse.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Jessey White-Cinis <j@cin.is>",
+  "author": "Jessey White-Cinis <jcinis@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "aws-sdk": "^2.28.0",
     "bluebird": "^3.5.0",
-    "express": "^4.14.0",
     "moment": "^2.18.1",
-    "socket.io": "^1.7.2"
   }
 }
