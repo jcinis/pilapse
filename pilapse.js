@@ -100,6 +100,11 @@ var pid_path = path.join(__dirname,'pilapse.pid');
 
 function start(){
 
+  fs.readFile(pid_path, function(err, data){
+    if(!err) throw new Error('Process '+ data +' already running from '+pid_path);
+  });
+
+
   fs.access(pid_path, function (err) {
     if (!err) throw new Error('PID file exists at ' + pid_path);
   });
