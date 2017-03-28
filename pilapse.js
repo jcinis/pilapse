@@ -104,11 +104,6 @@ function start(){
     if(!err) throw new Error('Process '+ data +' already running from '+pid_path);
   });
 
-
-  fs.access(pid_path, function (err) {
-    if (!err) throw new Error('PID file exists at ' + pid_path);
-  });
-
   var pid = String(process.pid);
   fs.writeFile(pid_path, pid, function(err) {
     if (err) throw err;
