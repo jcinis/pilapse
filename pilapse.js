@@ -54,7 +54,7 @@ function takePicture() {
 function uploadPicture(picture) {
   return new Promise(function(resolve, reject){
     fs.readFile(picture.filepath, function(err, data) {
-      if(err) reject(err);
+      if(err) throw err;
 
       var s3bucket = new AWS.S3({params: {Bucket: config.aws_s3_bucket }});
       var params = {
