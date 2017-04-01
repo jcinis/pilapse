@@ -1,13 +1,17 @@
 {
   "name": "pilapse",
-  "version": "0.0.0",
-  "description": "",
+  "version": "0.1.0",
+  "description": "RaspberryPi Camera time-lapse application that uploads each capture directly to AWS S3",
   "main": "pilapse.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Jessey White-Cinis <jcinis@gmail.com>",
+  "author": "Jessey White-Cinis <j@cin.is>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jcinis/pilapse.git"
+  },
   "dependencies": {
     "aws-sdk": "^2.28.0",
     "bluebird": "^3.5.0",
