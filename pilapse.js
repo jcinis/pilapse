@@ -5,7 +5,7 @@ const moment = require('moment');
 const spawn = require('child_process').spawn;
 const Promise = require('bluebird');
 const AWS = require('aws-sdk');
-AWS.config.loadFromPath(path.join(__dirname,'aws-creds.json'));
+AWS.config.loadFromPath(path.join(__dirname,'credentials.json'));
 const s3 = new AWS.S3();
 
 function Picture(){
