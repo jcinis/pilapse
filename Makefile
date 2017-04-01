@@ -15,8 +15,12 @@ clean:
 	rm -r node_modules
 
 install:
-	sudo mv pilapse /etc/init.d/pilapse.sh
+	sudo mv pilapse /etc/init.d/pilapse
 	sudo update-rc.d pilapse defaults
+
+uninstall:
+	sudo rm /etc/init.d/pilapse
+	sudo update-rc.d pilapse remove
 
 deploy:
 	rsync -az --force --delete --progress -e "ssh -p22" ./ pi@192.168.248.228:/opt/pilapse
