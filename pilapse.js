@@ -135,6 +135,8 @@ function stop(){
 
 // MAIN :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
+// Let's get this party started, right?
+
 start();
 process.on('SIGTERM', stop);
 process.on('SIGINT', stop);
