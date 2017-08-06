@@ -96,38 +96,15 @@ function capture(){
 }
 
 var interval;
-var pid_path = path.join(__dirname,'pilapse.pid');
-
 function start(){
-  fs.readFile(pid_path, function(err, data){
-    if (!err) {
-
-      throw new Error('Process '+ data +' already running from '+pid_path);
-
-    } else {
-
-      var pid = String(process.pid);
-      fs.writeFile(pid_path, pid, function(err) {
-        if (err) throw err;
-      });
-
-      console.info("process\tstarting timelapse\t" + config.capture_frequency + " seconds");
-
-      capture(); // take picture on start
-      interval = setInterval(function(){
-        capture();
-      }, config.capture_frequency * 1000)
-
-    }
-  });
+  console.info("process\tstarting timelapse\t" + config.capture_frequency + " seconds");
+  capture(); // take picture on start
+  interval = setInterval(function(){
+    capture();
+  }, config.capture_frequency * 1000)
 }
 
 function stop(){
-
-  fs.unlink(pid_path, function(err){
-    if (err) throw err;
-  });
-
   if(interval) clearInterval(interval);
   console.info("process\thalting timelapse");
 }
