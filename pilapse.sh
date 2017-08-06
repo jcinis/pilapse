@@ -10,16 +10,25 @@
 # Description:       Time-lapse camera service that utilizes the raspberry pi camera to take photos and post them to s3 on a given interval.
 ### END INIT INFO
 
+PID=$(ps aux | grep pilapse.js | grep -v grep | awk '{print $2}')
+
 case "$1" in
   start)
-    echo "Starting pilapse"
-	/usr/bin/nodejs /opt/pilapse/pilapse.js
+    if [ -z "$PID" ] ; then
+    	echo "Starting pilapse"
+	/usr/bin/nodejs /opt/pilapse/pilapse.js &
+    else
+        echo "Pilapse already running on process $PID"
+    fi
     ;;
   stop)
-    echo "Stopping pilapse"
-	PID=`cat /opt/pilapse/pilapse.pid`
-    kill $PID
-	;;
+    if [ -z "$PID" ] ; then
+        echo "Pilapse is not running"
+    else
+        echo "Stopping pilapse"
+        kill $PID
+    fi
+    ;;
   *)
     echo "Usage: /etc/init.d/pilapse {start|stop}"
     exit 1
@@ -27,3 +36,4 @@ case "$1" in
 esac
 
 exit 0
+
