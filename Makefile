@@ -24,3 +24,4 @@ uninstall:
 
 deploy:
 	rsync -az --force --delete --progress -e "ssh -p22" ./ pi@192.168.248.228:/opt/pilapse
+	ssh pi@192.168.248.228 "cd /opt/pilapse; make build; make install; service pilapse stop; service pilapse start"
